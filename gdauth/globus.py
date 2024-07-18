@@ -15,7 +15,10 @@ def refresh_globus_token(app_uuid):
     Parameters
     ----------
     app_uuid : App UUID 
-      
+
+    Returns
+    -------
+    ac, tc tokens : string
     """
 
     globus_token_file=os.path.join(str(pathlib.Path.home()), 'token.npy')
@@ -29,7 +32,8 @@ def refresh_globus_token(app_uuid):
         client = globus_sdk.NativeAppAuthClient(app_uuid)
         client.oauth2_start_flow(refresh_tokens=True)
 
-        log.warning('Please go to this URL and login: {0}'.format(client.oauth2_get_authorize_url()))
+        log.error('Please go to this URL and login:')
+        log.warning('{0}'.format(client.oauth2_get_authorize_url()))
 
         get_input = getattr(__builtins__, 'raw_input', input)
         auth_code = get_input('Please enter the code you get after login here: ').strip() # pythn 3
@@ -53,7 +57,8 @@ def refresh_globus_token(app_uuid):
         client = globus_sdk.NativeAppAuthClient(globus_app_id)
         client.oauth2_start_flow(refresh_tokens=True)
 
-        log.warning('Please go to this URL and login: {0}'.format(client.oauth2_get_authorize_url()))
+        log.error('Please go to this URL and login:')
+        log.warning('{0}'.format(client.oauth2_get_authorize_url()))
 
         get_input = getattr(__builtins__, 'raw_input', input)
         auth_code = get_input('Please enter the code you get after login here: ').strip()
@@ -88,7 +93,7 @@ def create_clients(app_uuid):
     expires_at_s = globus_transfer_data['expires_at_seconds']
 
     globus_token_life = expires_at_s - time.time()
-    log.warning("Globus access token will expire in %2.2f hours", (globus_token_life/3600))
+    log.info("Globus access token will expire in %2.2f hours", (globus_token_life/3600))
 
     client = globus_sdk.NativeAppAuthClient(app_uuid)
     client.oauth2_start_flow(refresh_tokens=True)
@@ -101,21 +106,36 @@ def create_clients(app_uuid):
     return ac, tc
 
 
-def create_dir(directory, # Subdirectory name under top to be created
-           app_uuid,  # Globus App / Client UUID
-           ep_uuid):  # Endpoint UUID
+def create_dir(directory, # Directory to be created in the share
+           app_uuid,      # Globus App / Client UUID
+           ep_uuid):      # Endpoint UUID
 
-    dir_path = '/' + str(directory) + '/'
+
+    """
+    Create directory
+
+    Parameters
+    ----------
+    directory  : Directory to be created in the share
+    app_uuid   : Globus App / Client UUID
+    ep_uuid    : Endpoint UUID
+
+    Returns
+    -------
+    Boolean : True if directory is created
+      
+    """
+
+    dir_path = str(directory) + '/'
     ac, tc = create_clients(app_uuid)
     try:
         response = tc.operation_mkdir(ep_uuid, path=dir_path)
         log.info('*** Created folder: %s' % dir_path)
-        log.info(create_folder_link(directory, app_uuid, ep_uuid))
-
+        log.warning(create_folder_link(directory, app_uuid, ep_uuid))
         return True
     except globus_sdk.TransferAPIError as e:
         log.warning(f"Transfer API Error: {e.code} - {e.message}")
-        log.info(create_folder_link(directory, app_uuid, ep_uuid))
+        log.warning(create_folder_link(directory, app_uuid, ep_uuid))
         # log.error(f"Details: {e.raw_text}")
         return True
     except:
@@ -124,6 +144,19 @@ def create_dir(directory, # Subdirectory name under top to be created
 
 
 def check_folder_exists(directory, app_uuid, ep_uuid):
+    """
+    Check if directory exists
+    
+    Parameters
+    ----------
+    directory  : Directory to be created in the share
+    app_uuid   : Globus App / Client UUID
+    ep_uuid    : Endpoint UUID
+
+    Returns
+    -------
+    Boolean : True if directory exists  
+    """
 
     ac, tc = create_clients(app_uuid)
 
@@ -138,76 +171,103 @@ def check_folder_exists(directory, app_uuid, ep_uuid):
 
 
 def get_user_id(app_uuid, email):
+    """
+    Get user id from user email
+    
+    Parameters
+    ----------
+    app_uuid   : Globus App / Client UUID
+    email      : User email address
+
+    Returns
+    -------
+    string : User ID
+      
+    """
 
     ac, tc = create_clients(app_uuid)
 
-    # Get user id from user email
-    r = ac.get_identities(usernames=email, provision=True)
-    user_id = r['identities'][0]['id']
+    
+    try:
+        r = ac.get_identities(usernames=email, provision=True)
+        user_id = r['identities'][0]['id']
+        return user_id
+    except globus_sdk.AuthAPIError as e:
+        if e.code == 'MISSING_PARAMETERS':
+            log.error(f"Authorization API Error: {e.code} - {e.message}")
+            return None
+        else:
+            raise e
 
-    return user_id
-
-
-def share(directory,       # Subdirectory name under top to be created
-          email,           # User email address
-          app_uuid, # Globus App UUID
-          ep_uuid          # Endpoint UUID
+def share(directory,       # Name of the directory to share
+          email,           # Email address to share the Globus directory with
+          app_uuid,        # Globus App UUID
+          ep_uuid,         # Endpoint UUID
+          message=''       # Custom message to include to the email
           ):         
     """
-    Share an existing globus directory with a globus user. The user receives an email with the link to the folder.
+    Share an existing globus directory with a Globus user. The user receives an email with the link to the folder.
     To add a custom message to the email edit the "notify message" field below
  
     Parameters
     ----------
-    email       : email address of the user you want to share the globus directory with
-    directory   : directory name to be shared
-    ep_uuid     : end point UUID
-    ac          : Access client
-    tc          : Transfer client
+    directory   : Name of the directory to share
+    email       : Email address to share the Globus directory with
+    app_uuid    : Globus App UUID
+    ep_uuid     : Endpoint UUID
 
+    Returns
+    -------
+    Boolean : True if folder is shared
     """
 
 
     if check_folder_exists(directory, app_uuid, ep_uuid):
         ac, tc = create_clients(app_uuid)
         user_id = get_user_id(app_uuid, email)
+        if user_id != None:
+            dir_path = '/' + str(directory) + '/'
+            # Set access control and notify user
+            rule_data = {
+              'DATA_TYPE': 'access',
+              'principal_type': 'identity',
+              'principal': user_id,
+              'path': dir_path,
+              'permissions': 'r',
+              'notify_email': message,
+              'notify_message': "add here a custom meassage"
+            }
 
-        dir_path = '/' + directory + '/'
-        # Set access control and notify user
-        rule_data = {
-          'DATA_TYPE': 'access',
-          'principal_type': 'identity',
-          'principal': user_id,
-          'path': dir_path,
-          'permissions': 'r',
-          'notify_email': email,
-          'notify_message': "add here a custom meassage"
-        }
-
-        try: 
-            response = tc.add_endpoint_acl_rule(ep_uuid, rule_data)
-            log.info('*** Path %s has been shared with %s' % (dir_path, email))
-            log.info(create_folder_link(directory, app_uuid, ep_uuid))
-            return True
-        except globus_sdk.TransferAPIError as e:
-            log.error(f"Transfer API Error: {e.code} - {e.message}")
-            return False
-        except:
-            log.warning('*** Path %s is already shared with %s' % (dir_path, email))
-            return False
+            try: 
+                response = tc.add_endpoint_acl_rule(ep_uuid, rule_data)
+                log.info('*** Path %s has been shared with %s' % (dir_path, email))
+                log.warning(create_folder_link(directory, app_uuid, ep_uuid))
+                return True
+            except globus_sdk.TransferAPIError as e:
+                if (e.code == 'Exists'):
+                    log.error(f"Transfer API Error: {e.code} - {e.message}")
+                    log.warning(create_folder_link(directory, app_uuid, ep_uuid))
+                    return True
+                else:
+                    return False
+        else:
+            log.error('Invalid user id')
     else:
-        log.error('%s does not exist' % directory)
-        log.error('Run: python globus.py create --directory <directory name>')
+        log.error('Directory does not exist')
+        log.error('Create: %s' % directory)
 
 
 def find_endpoints(app_uuid, show=False):
     """
-    Show all end points
+    Find all end points
 
     Parameters
     ----------
-    tc : Transfer client
+    app_uuid    : Globus App UUID
 
+    Returns
+    -------
+    dictionary : {endpoint name : endpoint id}
     """
 
     ac, tc = create_clients(app_uuid)
@@ -233,6 +293,19 @@ def find_endpoints(app_uuid, show=False):
 
 
 def create_folder_link(directory, app_uuid, ep_uuid):
+    """
+    Create link to a shared folder
+
+    Parameters
+    ----------
+    directory   : Name of the directory to share
+    app_uuid    : Globus App UUID
+    ep_uuid     : Endpoint UUID
+
+    Returns
+    -------
+    string : folder url
+    """
 
     ac, tc = create_clients(app_uuid)
 
@@ -242,6 +315,19 @@ def create_folder_link(directory, app_uuid, ep_uuid):
 
 
 def create_links(directory, app_uuid, ep_uuid):
+    """
+    Create links for all items contained in 
+
+    Parameters
+    ----------
+    directory   : Name of the directory to share
+    app_uuid    : Globus App UUID
+    ep_uuid     : Endpoint UUID
+
+    Returns
+    -------
+    lists : [file url],  [folder url]
+    """
 
     file_links   = []
     folder_links = []
@@ -258,7 +344,18 @@ def create_links(directory, app_uuid, ep_uuid):
 
 
 def find_endpoint_uuid(app_uuid, ep_name):
+    """
+    Find end point UUID
 
+    Parameters
+    ----------
+    app_uuid    : Globus App UUID
+    ep_name     : Endpoint name
+
+    Returns
+    -------
+    String : endpoin UUID
+    """
     ep_uuid = None
     # Ask the Globus server to show all end points it has access to
     end_points = find_endpoints(app_uuid)
@@ -275,6 +372,19 @@ def find_endpoint_uuid(app_uuid, ep_name):
 
     
 def find_files(directory, app_uuid, ep_uuid):
+    """
+    Find files
+
+    Parameters
+    ----------
+    directory   : Name of the directory to share
+    app_uuid    : Globus App UUID
+    ep_uuid     : Endpoint UUID
+
+    Returns
+    -------
+    Lists : [files], [folders]
+    """
 
     ac, tc = create_clients(app_uuid)
     response = tc.operation_ls(ep_uuid, path=directory)

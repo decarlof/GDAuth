@@ -47,7 +47,7 @@ SECTIONS['globus'] = {
 
 SECTIONS['create'] = {
     'dir': {
-        'default': ".",
+        'default': "/",
         'type': Path,
         'help': 'name of the directory to create on the Globus endpoint',
         'metavar': 'FILE'},
@@ -64,6 +64,7 @@ SECTIONS['share'] = {
 SHOW_PARAMS   = ('globus',)
 CREATE_PARAMS = ('globus', 'create')
 SHARE_PARAMS  = ('globus', 'create', 'share')
+GDAUTH_PARAMS = ('globus', 'create', 'share')
 
 NICE_NAMES = ('General', 'Globus', 'Create', 'Share')
 

@@ -73,6 +73,10 @@ def init(args):
 def show(args):
     """
     Show all available endpoints      
+
+    Parameters
+    ----------
+    args.app_uuid : Globus App / Client UUID
     """
     endpoints = globus.find_endpoints(args.app_uuid, show=True)
 
@@ -80,10 +84,14 @@ def show(args):
 def create(args):
     """
     Create a directory in a Globus endpoint    
-    """
 
+    Parameters
+    ----------
+    args.dir      : Directory to be created in the share
+    args.app_uuid : Globus App / Client UUID
+    """
     ep_uuid = globus.find_endpoint_uuid(args.app_uuid, args.ep_name)
-    globus.create_dir(args.dir,       # Subdirectory name under top to be created
+    globus.create_dir(args.dir,       # Directory to be created in the share
                       args.app_uuid,  # Globus App / Client UUID
                       ep_uuid)        # Endpoint UUID
 
@@ -93,11 +101,17 @@ def share(args):
 
     Parameters
     ----------
-    args : parameters passed at the CLI, see config.py for full options
+    args.dir      : Directory to be created in the share
+    args.email    : User email address
+    args.app_uuid : Globus App / Client UUID
     """
-    
-    log.info(args)
-    a=1
+    ep_uuid = globus.find_endpoint_uuid(args.app_uuid, args.ep_name)
+    globus.share(args.dir,      # Directory to be created in the share
+                 args.email,    # User email address
+                 args.app_uuid, # Globus App / Client UUID
+                 ep_uuid        # Endpoint UUID
+          )
+
 
 def main():
 
