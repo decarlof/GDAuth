@@ -1,1 +1,1 @@
-Project Home Page: http://dmagic.readthedocs.org/
+Project Home Page: TO DO
