@@ -107,10 +107,8 @@ def create_clients(app_uuid):
 
 
 def create_dir(directory, # Directory to be created in the share
-           app_uuid,      # Globus App / Client UUID
-           ep_uuid):      # Endpoint UUID
-
-
+               app_uuid,  # Globus App / Client UUID
+               ep_uuid):  # Endpoint UUID
     """
     Create directory
 
@@ -257,7 +255,7 @@ def share(directory,       # Name of the directory to share
         log.error('Create: %s' % directory)
 
 
-def find_endpoints(app_uuid, show=False):
+def find_endpoints(app_uuid):
     """
     Find all end points
 
@@ -272,24 +270,18 @@ def find_endpoints(app_uuid, show=False):
 
     ac, tc = create_clients(app_uuid)
     
-    endpoints = {}
-    if show:
-        log.info('Show all endpoints shared and owned by my globus user credentials')
-        log.info("*** Endpoints shared with me:")
-        for ep in tc.endpoint_search(filter_scope="shared-with-me"):
-            log.info("*** *** [{}] {}".format(ep["id"], ep["display_name"]))
-        log.info("*** Endpoints owned with me:")
-        for ep in tc.endpoint_search(filter_scope="my-endpoints"):
-            log.info("*** *** [{}] {}".format(ep["id"], ep["display_name"]))
-        log.info("*** Endpoints shared by me:")
-        for ep in tc.endpoint_search(filter_scope="shared-by-me"):
-            log.info("*** *** [{}] {}".format(ep["id"], ep["display_name"]))
-            endpoints[ep['display_name']] = ep['id']
-    else:
-        for ep in tc.endpoint_search(filter_scope="shared-by-me"):
-            endpoints[ep['display_name']] = ep['id']
+    my_endpoints ={}
+    endpoints_shared_with_me = {}
+    endpoints_shared_by_me = {}
 
-    return endpoints
+    for ep in tc.endpoint_search(filter_scope="my-endpoints"):
+        my_endpoints[ep['display_name']] = ep['id']
+    for ep in tc.endpoint_search(filter_scope="shared-with-me"):
+        endpoints_shared_with_me[ep['display_name']] = ep['id']
+    for ep in tc.endpoint_search(filter_scope="shared-by-me"):
+        endpoints_shared_by_me[ep['display_name']] = ep['id']
+
+    return  my_endpoints, endpoints_shared_with_me, endpoints_shared_by_me
 
 
 def create_folder_link(directory, app_uuid, ep_uuid):
@@ -314,9 +306,9 @@ def create_folder_link(directory, app_uuid, ep_uuid):
     return url
 
 
-def create_links(directory, app_uuid, ep_uuid):
+def create_links(directory, app_uuid, ep_uuid, show=False):
     """
-    Create links for all items contained in 
+    Create the links for all items (folder and files) listed in the endpoint directory
 
     Parameters
     ----------
@@ -333,12 +325,18 @@ def create_links(directory, app_uuid, ep_uuid):
     folder_links = []
 
     ac, tc = create_clients(app_uuid)
-    files, folders  = find_files(directory, app_uuid, ep_uuid)
+    files, folders  = find_items(directory, app_uuid, ep_uuid)
 
     for file_name in files:
-        file_links.append('https://' + tc.get_endpoint(ep_uuid)['tlsftp_server'][9:-4] + '/' + directory + '/' + file_name)
-    for folder in folders:
-        folder_links.append('https://app.globus.org/file-manager?&origin_id=' + ep_uuid + '&origin_path=/' + directory+ '/' + folder) #+'/&add_identity='+user_id)
+        file_link = 'https://' + tc.get_endpoint(ep_uuid)['tlsftp_server'][9:-4] + '/' + str(directory) + '/' + file_name
+        file_links.append(file_link)
+
+    for folder in folders:            
+        folder_link = 'https://app.globus.org/file-manager?&origin_id=' + ep_uuid + '&origin_path=' + str(directory) + '/' + folder #+'/&add_identity='+user_id
+        folder_links.append(folder_link)
+        if folder[-4:] == 'zarr':
+            file_link = 'https://' + tc.get_endpoint(ep_uuid)['tlsftp_server'][9:-4] + '/' + str(directory) + '/' + folder
+            file_links.append(file_link)
 
     return file_links, folder_links
 
@@ -358,22 +356,44 @@ def find_endpoint_uuid(app_uuid, ep_name):
     """
     ep_uuid = None
     # Ask the Globus server to show all end points it has access to
-    end_points = find_endpoints(app_uuid)
 
-    if ep_name in end_points:
-        ep_uuid = end_points[ep_name]
+    my_endpoints, endpoints_shared_with_me, endpoints_shared_by_me = find_endpoints(app_uuid)
+    if ep_name in my_endpoints:
+        ep_uuid = my_endpoints[ep_name]
+    elif ep_name in endpoints_shared_with_me:
+        ep_uuid = endpoints_shared_with_me[ep_name]
+    elif ep_name in endpoints_shared_by_me:
+        ep_uuid = endpoints_shared_by_me[ep_name]
     else:
         log.error('%s endpoint does not exists' % ep_name)
         log.error('Select one of this endpoints:')
-        for key, value in end_points.items():
+        for key, value in my_endpoints.items():
+            log.error('*** *** %s' % key)
+        for key, value in endpoints_shared_with_me.items():
+            log.error('*** *** %s' % key)
+        for key, value in endpoints_shared_by_me.items():
             log.error('*** *** %s' % key)
 
     return ep_uuid
 
-    
-def find_files(directory, app_uuid, ep_uuid):
+
+
+            # try: 
+            #     response = tc.add_endpoint_acl_rule(ep_uuid, rule_data)
+            #     log.info('*** Path %s has been shared with %s' % (dir_path, email))
+            #     log.warning(create_folder_link(directory, app_uuid, ep_uuid))
+            #     return True
+            # except globus_sdk.TransferAPIError as e:
+            #     if (e.code == 'Exists'):
+            #         log.error(f"Transfer API Error: {e.code} - {e.message}")
+            #         log.warning(create_folder_link(directory, app_uuid, ep_uuid))
+            #         return True
+            #     else:
+            #         return False
+
+def find_items(directory, app_uuid, ep_uuid):
     """
-    Find files
+    Find items (file or folders) present in the directory
 
     Parameters
     ----------
@@ -387,15 +407,17 @@ def find_files(directory, app_uuid, ep_uuid):
     """
 
     ac, tc = create_clients(app_uuid)
-    response = tc.operation_ls(ep_uuid, path=directory)
-    
     files   = []
     folders = []
-    for item in response['DATA']:
-        log.info('directory %s contains %s: %s' % (directory, item['type'], item['name']))
-        if item['type'] == 'file':
-            files.append(item['name'])
-        if item['type'] == 'dir':
-            folders.append(item['name'])
+    try:
+        response = tc.operation_ls(ep_uuid, path=directory)
+        for item in response['DATA']:
+            log.info('directory %s contains %s: %s' % (directory, item['type'], item['name']))
+            if item['type'] == 'file':
+                files.append(item['name'])
+            if item['type'] == 'dir':
+                folders.append(item['name'])
+    except globus_sdk.TransferAPIError as e:
+        log.error(f"Transfer API Error: {e.code} - {e.message}")
 
     return files, folders

@@ -78,8 +78,22 @@ def show(args):
     ----------
     args.app_uuid : Globus App / Client UUID
     """
-    endpoints = globus.find_endpoints(args.app_uuid, show=True)
+    my_endpoints, endpoints_shared_with_me, endpoints_shared_by_me = globus.find_endpoints(args.app_uuid)
 
+    log.info('Show all endpoints shared and owned by my globus user credentials')
+
+    log.info("*** Endpoints owned with me:")
+    for key, value in my_endpoints.items():
+        log.info("*** *** '{}' {}".format(key, value))
+
+    log.info("*** Endpoints shared with me:")
+    for key, value in endpoints_shared_with_me.items():
+        log.info("*** *** '{}' {}".format(key, value))
+
+    log.info("*** Endpoints shared by me:")
+    for key, value in endpoints_shared_by_me.items():
+        log.info("*** *** '{}' {}".format(key, value))
+        # endpoints[ep['display_name']] = ep['id']
 
 def create(args):
     """
@@ -112,6 +126,27 @@ def share(args):
                  ep_uuid        # Endpoint UUID
           )
 
+def links(args):
+    """
+    Create the links for all items (folder and files) listed in the endpoint
+
+    Parameters
+    ----------
+    args.dir      : Directory to be created in the share
+    args.app_uuid : Globus App / Client UUID
+    """
+
+    ep_uuid = globus.find_endpoint_uuid(args.app_uuid, args.ep_name)
+    print(ep_uuid)
+    if ep_uuid != None:
+        file_links, folder_links = globus.create_links(args.dir,       # Directory to be created in the share
+                                                       args.app_uuid,  # Globus App / Client UUID
+                                                       ep_uuid)        # Endpoint UUID
+
+        for file_link in file_links:
+            log.warning(file_link)
+        for folder_link in folder_links:
+            log.warning(folder_link)
 
 def main():
 
@@ -124,12 +159,14 @@ def main():
     show_params   = config.SHOW_PARAMS
     create_params = config.CREATE_PARAMS
     share_params  = config.SHARE_PARAMS
+    links_params  = config.LINKS_PARAMS
 
     cmd_parsers = [
         ('init',        init,           (),               "Create configuration file"),
         ('show',        show,           show_params,      "Show all endpoints on the Globus server"),
-        ('create',      create,         create_params,    "Create a folder on the Globus server"),
-        ('share',       share,          share_params,     "Share a Globus folder with a user email address"),
+        ('create',      create,         create_params,    "Create a folder on the Globus endpoint"),
+        ('share',       share,          share_params,     "Share a Globus endpoint folder with a user email address"),
+        ('links',       links,          links_params,     "Create download links for all items (folder and files) listed in a Globus endpoint folder."),
     ]
 
     subparsers = parser.add_subparsers(title="Commands", metavar='')
