@@ -312,6 +312,7 @@ autodoc_mock_imports = ['os',
                         'argparse',
                         'configparser',
                         'numpy',
-                        'logging']
+                        'logging',
+                        'globus_sdk']
 
 
