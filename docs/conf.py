@@ -314,6 +314,7 @@ autodoc_mock_imports = ['os',
                         'numpy',
                         'logging',
                         'globus_sdk',
-                        'collections']
+                        'collections',
+                        'time']
 
 

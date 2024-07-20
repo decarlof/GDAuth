@@ -51,7 +51,6 @@ Module containing an example on how to use GDAuth to access a Globus server, cre
 directories and share them with users.
 
 """
-
 import os
 import sys
 import argparse
@@ -59,9 +58,6 @@ import argparse
 from gdauth import log
 from gdauth import config
 from gdauth import globus
-# from gdauth import authorize
-# from gdauth import utils
-
 
 def init(args):
     if not os.path.exists(str(args.config)):
