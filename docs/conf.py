@@ -311,6 +311,7 @@ autodoc_mock_imports = ['os',
                         'pathlib',
                         'argparse',
                         'configparser',
-                        'numpy']
+                        'numpy',
+                        'logging']
 
 
