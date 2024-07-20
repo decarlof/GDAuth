@@ -103,11 +103,7 @@ def create_clients(app_uuid):
     """
 
     token_response = refresh_globus_token(app_uuid)
-    print('***************')
-    print('***************')
-    print(token_response)
-    print('***************')
-    print('***************')
+
     # let's get stuff for the Globus Transfer service
     globus_transfer_data = token_response.by_resource_server['transfer.api.globus.org']
     # the refresh token and access token, often abbr. as RT and AT
