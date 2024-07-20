@@ -1,4 +1,4 @@
-:mod:`GDAuth.globus`
+:mod:`gdauth.globus`
 ====================
 
 .. automodule:: gdauth.globus
