@@ -19,5 +19,4 @@
       find_endpoints
       create_folder_link
       create_links
-      find_endpoint_uuid
       find_items

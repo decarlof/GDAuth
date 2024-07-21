@@ -39,15 +39,11 @@ SECTIONS['globus'] = {
         'default' : '2f1fd715-ee09-43f9-9b48-1f06810bcc70',
         'type': str,
         'help': "App UUID see https://globus-sdk-python.readthedocs.io/en/stable/tutorial.html#tutorial-step1"},
-    }
-
-SECTIONS['endpoint'] = {
-    'ep-name':{
-        'default': 'DARPA scratch',
+    'ep-uuid':{
+        'default': 'b07f6a40-672c-4ae8-b420-83eb6e925381',
         'type': str,
-        'help': "endpoint name"},
+        'help': "endpoint UUID"},
     }
-
 
 SECTIONS['path'] = {
     'dir': {
@@ -66,10 +62,10 @@ SECTIONS['share'] = {
     }
 
 SHOW_PARAMS   = ('globus',)
-CREATE_PARAMS = ('globus', 'endpoint', 'path')
-SHARE_PARAMS  = ('globus', 'endpoint', 'path', 'share')
-LINKS_PARAMS  = ('globus', 'endpoint', 'path')
-GDAUTH_PARAMS = ('globus', 'endpoint', 'path', 'share')
+CREATE_PARAMS = ('globus', 'path')
+SHARE_PARAMS  = ('globus', 'path', 'share')
+LINKS_PARAMS  = ('globus', 'path')
+GDAUTH_PARAMS = ('globus', 'path', 'share')
 
 NICE_NAMES = ('General', 'Globus', 'Path', 'Share')
 

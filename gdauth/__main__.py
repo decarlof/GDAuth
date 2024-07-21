@@ -73,8 +73,9 @@ def show(args):
     Parameters
     ----------
     args.app_uuid : Globus App / Client UUID
+    args.ep_uuid  : Endpoint UUID
     """
-    my_endpoints, endpoints_shared_with_me, endpoints_shared_by_me = globus.find_endpoints(args.app_uuid)
+    my_endpoints, endpoints_shared_with_me, endpoints_shared_by_me = globus.find_endpoints(args.app_uuid, args.ep_uuid)
 
     log.info('Show all endpoints shared and owned by my globus user credentials')
 
@@ -99,11 +100,12 @@ def create(args):
     ----------
     args.dir      : Directory to be created in the share
     args.app_uuid : Globus App / Client UUID
+    args.ep_uuid  : Endpoint UUID
     """
-    ep_uuid = globus.find_endpoint_uuid(args.app_uuid, args.ep_name)
+    # ep_uuid = globus.find_endpoint_uuid(args.app_uuid, args.ep_name)
     globus.create_dir(args.dir,       # Directory to be created in the share
                       args.app_uuid,  # Globus App / Client UUID
-                      ep_uuid)        # Endpoint UUID
+                      args.ep_uuid)   # Endpoint UUID
 
 def share(args):
     """
@@ -114,12 +116,12 @@ def share(args):
     args.dir      : Directory to be created in the share
     args.email    : User email address
     args.app_uuid : Globus App / Client UUID
+    args.ep_uuid  : Endpoint UUID
     """
-    ep_uuid = globus.find_endpoint_uuid(args.app_uuid, args.ep_name)
     globus.share(args.dir,      # Directory to be created in the share
                  args.email,    # User email address
                  args.app_uuid, # Globus App / Client UUID
-                 ep_uuid        # Endpoint UUID
+                 args.ep_uuid   # Endpoint UUID
           )
 
 def links(args):
@@ -130,19 +132,19 @@ def links(args):
     ----------
     args.dir      : Directory to be created in the share
     args.app_uuid : Globus App / Client UUID
+    args.ep_uuid  : Endpoint UUID
     """
 
-    ep_uuid = globus.find_endpoint_uuid(args.app_uuid, args.ep_name)
-    print(ep_uuid)
-    if ep_uuid != None:
-        file_links, folder_links = globus.create_links(args.dir,       # Directory to be created in the share
-                                                       args.app_uuid,  # Globus App / Client UUID
-                                                       ep_uuid)        # Endpoint UUID
+    # ep_uuid = globus.find_endpoint_uuid(args.app_uuid, args.ep_name)
 
-        for file_link in file_links:
-            log.warning(file_link)
-        for folder_link in folder_links:
-            log.warning(folder_link)
+    file_links, folder_links = globus.create_links(args.dir,       # Directory to be created in the share
+                                                   args.app_uuid,  # Globus App / Client UUID
+                                                   args.ep_uuid)   # Endpoint UUID
+
+    for file_link in file_links:
+        log.warning(file_link)
+    for folder_link in folder_links:
+        log.warning(folder_link)
 
 def main():
 
@@ -189,43 +191,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
-# def main():
-
-
-#     home = os.path.expanduser("~")
-
-#     # This is just to print nice logger messages
-#     log.setup_custom_logger()
-
-#     # Create a client or "app" definition registered with Globus and get its uuid 
-#     # see https://globus-sdk-python.readthedocs.io/en/stable/tutorial.html#tutorial-step1
-#     app_uuid = '2f1fd715-ee09-43f9-9b48-1f06810bcc70'
-
-#     ep_name = 'DARPA scratch'
-#     ep_uuid = find_endpoint_uuid(app_uuid, ep_name )
-
-
-#     if ep_uuid != None:
-#         directory  = "test2"
-#         email = "decarlof@globusid.org"
-
-#         # create a new directory on the selected end point
-#         if create(directory, app_uuid, ep_uuid):
-#             # share the directory with the Globus user associated to an email address
-#             share(directory, email, app_uuid, ep_uuid)
-
-#         url      = create_folder_link(directory, app_uuid, ep_uuid)
-#         log.warning('url folder address: %s' % url)
-
-#         file_links, folder_links = create_links(directory, app_uuid, ep_uuid)
-#         for file_link in file_links:
-#             log.info('file download link: %s' % file_link)
-#         for folder_link in folder_links:
-#             log.info('folder download link: %s' % folder_link)
-
-
-# if __name__ == '__main__':
-#     main()
