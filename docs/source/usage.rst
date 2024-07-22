@@ -4,6 +4,24 @@ Usage
 
 GDAuth creates and shares folders located on a Globus endpoint and creates download links to file and folders.
 
+For help::
+
+    (globus) $ gdauth -h
+    usage: gdauth [-h] [--config FILE]  ...
+
+    options:
+      -h, --help     show this help message and exit
+      --config FILE  File name of configuration
+
+    Commands:
+      
+        init         Create configuration file
+        select       Select collection (endpoint) on the Globus server
+        create       Create a folder on the Globus endpoint
+        share        Share a Globus endpoint folder with a user email address
+        links        Create download links for all items (folder and files) listed in a Globus endpoint folder.
+
+
 To initlialize GDAuth status::
 
     (globus) $ gdauth init
@@ -90,21 +108,4 @@ To select the collection/endpoint you want to create/share folder in:
     2024-07-21 20:24:44,247 -   app_uuid         2f1fd715-ee09-43f9-9b48-1f06810bcc70
     2024-07-21 20:24:44,247 -   ep_uuid          401f7b59-7823-4506-82a6-284a34026f0e
 
-
-For help::
-
-    (globus) $ gdauth -h
-    usage: gdauth [-h] [--config FILE]  ...
-
-    options:
-      -h, --help     show this help message and exit
-      --config FILE  File name of configuration
-
-    Commands:
-      
-        init         Create configuration file
-        select       Select collection (endpoint) on the Globus server
-        create       Create a folder on the Globus endpoint
-        share        Share a Globus endpoint folder with a user email address
-        links        Create download links for all items (folder and files) listed in a Globus endpoint folder.
 
