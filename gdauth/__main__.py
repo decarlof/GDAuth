@@ -102,7 +102,7 @@ def select(args):
         for index, (key, value) in enumerate(endpoints_shared_by_me.items()):
             log.warning(f'{index}: {key}: {value}')
 
-        log.error("Select a collection by entering its index:")
+        log.error("Select a collection by entering its index")
         # Prompt the user to select an index
         user_input = input("Please select an index: ")
 
