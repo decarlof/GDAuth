@@ -53,11 +53,13 @@ directories and share them with users.
 """
 import os
 import sys
+import pathlib
 import argparse
 
 from gdauth import log
 from gdauth import config
 from gdauth import globus
+from gdauth import utils
 
 def init(args):
     if not os.path.exists(str(args.config)):
@@ -66,9 +68,9 @@ def init(args):
         raise RuntimeError("{0} already exists".format(args.config))
 
 
-def show(args):
+def select(args):
     """
-    Show all available endpoints      
+    Select collection/endpoint among the one sharedy by me       
 
     Parameters
     ----------
@@ -89,8 +91,40 @@ def show(args):
 
     log.info("*** Endpoints shared by me:")
     for key, value in endpoints_shared_by_me.items():
-        log.info("*** *** '{}' {}".format(key, value))
+        if value == args.ep_uuid:
+            log.warning("Active: '{}' {}".format(key, value))
+        else:
+            log.info("*** *** '{}' {}".format(key, value))
         # endpoints[ep['display_name']] = ep['id']
+
+    if utils.yes_or_no("Do you want to select a different collection (endpoint)?"):
+
+        for index, (key, value) in enumerate(endpoints_shared_by_me.items()):
+            log.warning(f'{index}: {key}: {value}')
+
+        log.error("Select a collection by entering its index:")
+        # Prompt the user to select an index
+        user_input = input("Please select an index: ")
+
+        # Validate and process the user input
+        try:
+            selected_index = int(user_input)
+            if 0 <= selected_index < len(endpoints_shared_by_me):
+                selected_key = list(endpoints_shared_by_me.keys())[selected_index]
+                selected_value = endpoints_shared_by_me[selected_key]
+                log.warning(f'You selected index {selected_index}: {selected_key}: {selected_value}')
+                args.ep_uuid = selected_value
+                # Update token file
+                os.remove(os.path.join(str(pathlib.Path.home()), 'token.npy'))
+                log.error("A new token will be generated next time you run GDAuth")
+            else:
+                log.warning("Invalid index. Please select a valid index.")
+                log.warning("No collection/endpoint change. Endpoint is %s " % args.ep_uuid)
+        except ValueError:
+            print("Invalid input. Please enter a number.")
+    else:
+        log.warning("No collection/endpoint change. Endpoint is %s " % args.ep_uuid)
+
 
 def create(args):
     """
@@ -154,14 +188,14 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', **config.SECTIONS['general']['config'])
 
-    show_params   = config.SHOW_PARAMS
+    select_params   = config.SELECT_PARAMS
     create_params = config.CREATE_PARAMS
     share_params  = config.SHARE_PARAMS
     links_params  = config.LINKS_PARAMS
 
     cmd_parsers = [
         ('init',        init,           (),               "Create configuration file"),
-        ('show',        show,           show_params,      "Show all endpoints on the Globus server"),
+        ('select',      select,         select_params,    "Select collection (endpoint) on the Globus server"),
         ('create',      create,         create_params,    "Create a folder on the Globus endpoint"),
         ('share',       share,          share_params,     "Share a Globus endpoint folder with a user email address"),
         ('links',       links,          links_params,     "Create download links for all items (folder and files) listed in a Globus endpoint folder."),

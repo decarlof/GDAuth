@@ -34,7 +34,7 @@ SECTIONS['general'] = {
         'help': 'Verbose output',
         'action': 'store_true'}}
 
-SECTIONS['globus'] = {
+SECTIONS['select'] = {
     'app-uuid' : {
         'default' : '2f1fd715-ee09-43f9-9b48-1f06810bcc70',
         'type': str,
@@ -61,11 +61,11 @@ SECTIONS['share'] = {
         'metavar': 'FILE'},
     }
 
-SHOW_PARAMS   = ('globus',)
-CREATE_PARAMS = ('globus', 'path')
-SHARE_PARAMS  = ('globus', 'path', 'share')
-LINKS_PARAMS  = ('globus', 'path')
-GDAUTH_PARAMS = ('globus', 'path', 'share')
+SELECT_PARAMS = ('select',)
+CREATE_PARAMS = ('select', 'path')
+SHARE_PARAMS  = ('select', 'path', 'share')
+LINKS_PARAMS  = ('select', 'path')
+GDAUTH_PARAMS = ('select', 'path', 'share')
 
 NICE_NAMES = ('General', 'Globus', 'Path', 'Share')
 
