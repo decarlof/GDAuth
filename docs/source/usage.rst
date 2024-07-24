@@ -2,7 +2,7 @@
 Usage
 =====
 
-GDAuth creates and shares folders located on a Globus endpoint and creates download links to file and folders.
+GDAuth creates and shares folders in a Collection. It also creates download links to file and folders listed in the Collection.
 
 For help::
 
@@ -16,10 +16,10 @@ For help::
     Commands:
       
         init         Create configuration file
-        select       Select collection (endpoint) on the Globus server
-        create       Create a folder on the Globus endpoint
-        share        Share a Globus endpoint folder with a user email address
-        links        Create download links for all items (folder and files) listed in a Globus endpoint folder.
+        select       Select a Collection on the Globus server
+        create       Create a folder in the Collection
+        share        Share a Collection folder with a user email address
+        links        Create download links for all items (folder and files) listed in a Collection folder
 
 
 To initlialize GDAuth status::
@@ -31,14 +31,13 @@ To initlialize GDAuth status::
 
 this creates the GDAuth config file: ~/GDAuth.conf with default values.
 
-To select the collection/endpoint you want to create/share folder in:
+To select the Collection you want to create/share folder in:
 
 ::
 
     (globus) $ gdauth select   
     2024-07-21 20:20:20,479 - wget token: AgprNBXnpznQ509OnQgN1mmzyql0DEEkBvgBqe8wjJlq7BG92FvCa7Obpw0owrWgB1d2qmJg9eDDvfymawXzTWwWva
     2024-07-21 20:20:20,479 - Globus access token will expire in 47.98 hours
-    es
     2024-07-21 20:20:21,277 - Show all endpoints shared and owned by my globus user credentials
     2024-07-21 20:20:21,277 - *** Endpoints owned with me:
     2024-07-21 20:20:21,277 - *** *** 'handyn' d8e73490-41e8-11ef-963f-453c3ae125a5
@@ -75,7 +74,7 @@ To select the collection/endpoint you want to create/share folder in:
     2024-07-21 20:20:21,278 - *** *** 'Stu-2024-01-recs' a62df544-26df-4f19-8342-cb4fb3baf8f3
     2024-07-21 20:20:21,278 - *** *** 'TomoBank' 9f00a780-4aee-42a7-b7f4-6a2773c8da30
     2024-07-21 20:20:21,278 - *** *** 'TomoBank Upload' 42c88e95-a510-415f-8c78-86e23a905e09
-    Do you want to select a different collection (endpoint)? (Y/N): 
+    Do you want to select a different collection ? (Y/N): 
     2024-07-21 20:20:21,278 - 0: 2-BM tomography data: 635c3ecb-f073-42ef-8278-471ed99bfd6e
     2024-07-21 20:20:21,278 - 1: Allen institute data: 144ef39b-65d9-4623-9d5d-7394499261a3
     2024-07-21 20:20:21,278 - 2: BNL: e909d1d5-b8d9-490a-b9e9-a2ac312bb6fd

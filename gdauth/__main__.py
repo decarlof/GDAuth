@@ -97,7 +97,7 @@ def select(args):
             log.info("*** *** '{}' {}".format(key, value))
         # endpoints[ep['display_name']] = ep['id']
 
-    if utils.yes_or_no("Do you want to select a different collection (endpoint)?"):
+    if utils.yes_or_no("Do you want to select a different collection ?"):
 
         for index, (key, value) in enumerate(endpoints_shared_by_me.items()):
             log.warning(f'{index}: {key}: {value}')
@@ -195,10 +195,10 @@ def main():
 
     cmd_parsers = [
         ('init',        init,           (),               "Create configuration file"),
-        ('select',      select,         select_params,    "Select collection (endpoint) on the Globus server"),
-        ('create',      create,         create_params,    "Create a folder on the Globus endpoint"),
-        ('share',       share,          share_params,     "Share a Globus endpoint folder with a user email address"),
-        ('links',       links,          links_params,     "Create download links for all items (folder and files) listed in a Globus endpoint folder."),
+        ('select',      select,         select_params,    "Select a Collection on the Globus server"),
+        ('create',      create,         create_params,    "Create a folder in the Collection"),
+        ('share',       share,          share_params,     "Share a Collection folder with a user email address"),
+        ('links',       links,          links_params,     "Create download links for all items (folder and files) listed in a Collection folder"),
     ]
 
     subparsers = parser.add_subparsers(title="Commands", metavar='')

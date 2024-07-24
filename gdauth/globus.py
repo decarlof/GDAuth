@@ -32,7 +32,8 @@ def refresh_globus_token(app_uuid, ep_uuid):
 
     Parameters
     ----------
-    app_uuid : App UUID 
+    app_uuid : Globus App / Client UUID
+    ep_uuid  : Collection UUID
 
     Returns
     -------
@@ -93,7 +94,8 @@ def create_clients(app_uuid, ep_uuid):
 
     Parameters
     ----------
-    globus_app_id : App UUID 
+    app_uuid : Globus App / Client UUID
+    ep_uuid  : Collection UUID
 
     Returns
     -------
@@ -129,15 +131,15 @@ def create_clients(app_uuid, ep_uuid):
 
 def create_dir(directory, # Directory to be created in the share
                app_uuid,  # Globus App / Client UUID
-               ep_uuid):  # Endpoint UUID
+               ep_uuid):  # Collection UUID
     """
     Create directory
 
     Parameters
     ----------
-    directory  : Directory to be created in the share
-    app_uuid   : Globus App / Client UUID
-    ep_uuid    : Endpoint UUID
+    directory : Directory to be created in the share
+    app_uuid  : Globus App / Client UUID
+    ep_uuid   : Collection UUID
 
     Returns
     -------
@@ -168,9 +170,9 @@ def check_folder_exists(directory, app_uuid, ep_uuid):
     
     Parameters
     ----------
-    directory  : Directory to be created in the share
-    app_uuid   : Globus App / Client UUID
-    ep_uuid    : Endpoint UUID
+    directory : Directory to be created in the share
+    app_uuid  : Globus App / Client UUID
+    ep_uuid   : Collection UUID
 
     Returns
     -------
@@ -195,9 +197,9 @@ def get_user_id(email, app_uuid, ep_uuid):
     
     Parameters
     ----------
-    email      : User email address
-    app_uuid   : Globus App / Client UUID
-    ep_uuid    : Endpoint UUID
+    email    : User email address
+    app_uuid : Globus App / Client UUID
+    ep_uuid  : Collection UUID
 
     Returns
     -------
@@ -221,8 +223,8 @@ def get_user_id(email, app_uuid, ep_uuid):
 
 def share(directory,       # Name of the directory to share
           email,           # Email address to share the Globus directory with
-          app_uuid,        # Globus App UUID
-          ep_uuid,         # Endpoint UUID
+          app_uuid,        # Globus App / Client UUID
+          ep_uuid,         # Collection UUID
           message=''       # Custom message to include to the email
           ):         
     """
@@ -231,10 +233,11 @@ def share(directory,       # Name of the directory to share
  
     Parameters
     ----------
-    directory   : Name of the directory to share
-    email       : Email address to share the Globus directory with
-    app_uuid    : Globus App UUID
-    ep_uuid     : Endpoint UUID
+    directory : Name of the directory to share
+    email     : Email address to share the Globus directory with
+    app_uuid  : Globus App / Client UUID
+    ep_uuid   : Collection UUID
+    message   : Custom message to include to the email
 
     Returns
     -------
@@ -283,7 +286,8 @@ def find_endpoints(app_uuid, ep_uuid):
 
     Parameters
     ----------
-    app_uuid    : Globus App UUID
+    app_uuid,        # Globus App / Client UUID
+    ep_uuid,         # Collection UUID
 
     Returns
     -------
@@ -312,9 +316,9 @@ def create_folder_link(directory, app_uuid, ep_uuid):
 
     Parameters
     ----------
-    directory   : Name of the directory to share
-    app_uuid    : Globus App UUID
-    ep_uuid     : Endpoint UUID
+    directory : Directory to be created in the share
+    app_uuid  : Globus App / Client UUID
+    ep_uuid   : Collection UUID
 
     Returns
     -------
@@ -328,15 +332,15 @@ def create_folder_link(directory, app_uuid, ep_uuid):
     return url
 
 
-def create_links(directory, app_uuid, ep_uuid, show=False):
+def create_links(directory, app_uuid, ep_uuid):
     """
     Create the links for all items (folder and files) listed in the endpoint directory
 
     Parameters
     ----------
-    directory   : Name of the directory to share
-    app_uuid    : Globus App UUID
-    ep_uuid     : Endpoint UUID
+    directory : Directory to be created in the share
+    app_uuid  : Globus App / Client UUID
+    ep_uuid   : Collection UUID
 
     Returns
     -------
@@ -369,9 +373,9 @@ def find_items(directory, app_uuid, ep_uuid):
 
     Parameters
     ----------
-    directory   : Name of the directory to share
-    app_uuid    : Globus App UUID
-    ep_uuid     : Endpoint UUID
+    directory : Directory to be created in the share
+    app_uuid  : Globus App / Client UUID
+    ep_uuid   : Collection UUID
 
     Returns
     -------
