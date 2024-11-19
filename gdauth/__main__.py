@@ -181,18 +181,19 @@ def links(args):
         log.warning(folder_link)
 
 def main():
-
-    # This is just to print nice logger messages
+    # Set up custom logger for cleaner output
     log.setup_custom_logger()
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description="GDAuth CLI tool")
     parser.add_argument('--config', **config.SECTIONS['general']['config'])
 
-    select_params   = config.SELECT_PARAMS
+    # Define subcommand parameters
+    select_params = config.SELECT_PARAMS
     create_params = config.CREATE_PARAMS
-    share_params  = config.SHARE_PARAMS
-    links_params  = config.LINKS_PARAMS
+    share_params = config.SHARE_PARAMS
+    links_params = config.LINKS_PARAMS
 
+    # Subcommands setup
     cmd_parsers = [
         ('init',        init,           (),               "Create configuration file"),
         ('select',      select,         select_params,    "Select a Collection on the Globus server"),
@@ -209,19 +210,24 @@ def main():
         cmd_parser = cmd_params.add_arguments(cmd_parser)
         cmd_parser.set_defaults(_func=func)
 
-    args = config.parse_known_args(parser, subparser=True)
+    # Parse arguments
+    args = parser.parse_args()
+
+    # Check if a command was provided
+    if not hasattr(args, '_func'):
+        parser.print_help()
+        sys.exit(1)
 
     try:
-        # load args from default (config.py) if not changed
+        # Run the associated function for the subcommand
         args._func(args)
         config.log_values(args)
-        # undate globus.config file
+
+        # Update the configuration file if needed
         sections = config.GDAUTH_PARAMS
         config.write(args.config, args=args, sections=sections)
     except RuntimeError as e:
         log.error(str(e))
         sys.exit(1)
-
-
 if __name__ == '__main__':
     main()
